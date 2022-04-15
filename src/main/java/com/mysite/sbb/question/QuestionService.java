@@ -3,9 +3,14 @@ package com.mysite.sbb.question;
 import com.mysite.sbb.DataNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -21,9 +26,12 @@ public class QuestionService {
         return modelMapper.map(question, QuestionDto.class);  // {} Question 객체를 QuestionDto로 변경
     }
 
-    public List<QuestionDto> getList() {
-        List<Question> questionList = this.questionRepository.findAll();
-        List<QuestionDto> questionDtoList = questionList.stream().map(q -> of(q)).collect(Collectors.toList());
+    public Page<QuestionDto> getList(int page) {
+        List<Sort.Order> sorts = new ArrayList<>();
+        sorts.add(Sort.Order.desc("createDate"));
+        Pageable pageable = PageRequest.of(page, 10, Sort.by(sorts));
+        Page<Question> questionList = this.questionRepository.findAll(pageable);
+        Page<QuestionDto> questionDtoList = questionList.map(q -> of(q));
         return questionDtoList;
     }
 
